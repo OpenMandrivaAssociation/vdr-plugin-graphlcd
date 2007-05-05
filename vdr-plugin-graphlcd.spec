@@ -2,7 +2,7 @@
 %define plugin	graphlcd
 %define name	vdr-plugin-%plugin
 %define version	0.1.5
-%define rel	1
+%define rel	2
 
 Summary:	VDR plugin: Output to graphic LCD
 Name:		%name
