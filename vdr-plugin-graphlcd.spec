@@ -12,6 +12,7 @@ Group:		Video
 License:	GPL
 URL:		http://graphlcd.berlios.de/
 Source:		vdr-%plugin-%version-stripped.tar.bz2
+BuildRoot:	%{_tmppath}/%{name}-buildroot
 BuildRequires:	vdr-devel >= 1.4.1-6
 BuildRequires:	glcddrivers-devel
 BuildRequires:	glcdgraphics-devel
