@@ -16,7 +16,12 @@ Patch0:		graphlcd-0.1.5-i18n-1.6.patch
 Patch1:		90_graphlcd-0.1.5-1.5.3.dpatch
 BuildRoot:	%{_tmppath}/%{name}-buildroot
 BuildRequires:	vdr-devel >= 1.6.0
+%if %mdkversion <= 200800
+BuildRequires:	glcdgraphics-devel
+BuildRequires:	glcddrivers-devel
+%else
 BuildRequires:	graphlcd-devel
+%endif
 Requires:	vdr-abi = %vdr_abi
 
 %description
