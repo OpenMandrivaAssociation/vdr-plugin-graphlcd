@@ -1,0 +1,2035 @@
+
+This is a semi-automatically created i18n adaptation patch and may contain
+errors (such as missing translations). This should only be used as a
+temporary measure until the upstream plugin maintainer fixes the plugin
+properly according to the instructions in i18n-to-gettext.pl.
+
+Created for Mandriva Linux packaging by Anssi Hannula <anssi@mandriva.org>.
+
+
+Index: graphlcd-0.1.5/Makefile
+===================================================================
+--- graphlcd-0.1.5/Makefile
++++ graphlcd-0.1.5/Makefile	2008-04-24 00:06:49.000000000 +0300
+@@ -57,7 +57,7 @@
+ 
+ ### The object files (add further files here):
+ 
+-OBJS = display.o i18n.o layout.o logo.o logolist.o menu.o plugin.o setup.o state.o strfct.o widgets.o
++OBJS = display.o  layout.o logo.o logolist.o menu.o plugin.o setup.o state.o strfct.o widgets.o
+ 
+ 
+ ### Implicit rules:
+@@ -76,9 +76,34 @@
+ -include $(DEPFILE)
+ 
+ 
++### Internationalization (I18N):
++
++PODIR     = po
++LOCALEDIR = $(VDRDIR)/locale
++I18Npo    = $(wildcard $(PODIR)/*.po)
++I18Nmsgs  = $(addprefix $(LOCALEDIR)/, $(addsuffix /LC_MESSAGES/vdr-$(PLUGIN).mo, $(notdir $(foreach file, $(I18Npo), $(basename $(file))))))
++I18Npot   = $(PODIR)/$(PLUGIN).pot
++
++%.mo: %.po
++	msgfmt -c -o $@ $<
++
++$(I18Npot): $(wildcard *.[ch] *.[ch]xx *.cc *.[ch]pp *.hh)
++	xgettext -C -cTRANSLATORS --no-wrap --no-location -k -ktr -ktrNOOP --msgid-bugs-address='<http://qa.mandriva.com/>' -o $@ $^
++
++%.po: $(I18Npot)
++	msgmerge -U --no-wrap --no-location --backup=none -q $@ $<
++	@touch $@
++
++$(I18Nmsgs): $(LOCALEDIR)/%/LC_MESSAGES/vdr-$(PLUGIN).mo: $(PODIR)/%.mo
++	@mkdir -p $(dir $@)
++	cp $< $@
++
++.PHONY: i18n
++i18n: $(I18Nmsgs)
++
+ ### Targets:
+ 
+-all: libvdr-$(PLUGIN).so
++all: libvdr-$(PLUGIN).so i18n
+ .PHONY: all
+ 
+ 
+@@ -95,6 +120,7 @@
+ 	@echo Distribution package created as $(PACKAGE).tgz
+ 
+ clean:
++	@-rm -f $(PODIR)/*.mo $(PODIR)/*.pot
+ 	@-rm -f *.o $(DEPFILE) *.so *.tgz core* *~
+ 
+ install: all
+Index: graphlcd-0.1.5/display.c
+===================================================================
+--- graphlcd-0.1.5/display.c
++++ graphlcd-0.1.5/display.c	2008-04-24 00:06:49.000000000 +0300
+@@ -22,7 +22,7 @@
+ 
+ #include "display.h"
+ #include "global.h"
+-#include "i18n.h"
++
+ #include "setup.h"
+ #include "state.h"
+ #include "strfct.h"
+Index: graphlcd-0.1.5/i18n.c
+===================================================================
+--- graphlcd-0.1.5/i18n.c
++++ graphlcd-0.1.5/i18n.c	2008-04-24 00:06:49.000000000 +0300
+@@ -1,970 +0,0 @@
+-/**
+- *  GraphLCD plugin for the Video Disk Recorder
+- *
+- *  i18n.c  -  Internationalization
+- *
+- *  (c) 2001-2004 Carsten Siebholz <c.siebholz AT t-online de>
+- **/
+-
+-/***************************************************************************
+- *                                                                         *
+- *   This program is free software; you can redistribute it and/or modify  *
+- *   it under the terms of the GNU General Public License as published by  *
+- *   the Free Software Foundation; either version 2 of the License, or     *
+- *   (at your option) any later version.                                   *
+- *                                                                         *
+- *   This program is distributed in the hope that it will be useful,       *
+- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+- *   GNU General Public License for more details.                          *
+- *                                                                         *
+- *   You should have received a copy of the GNU General Public License     *
+- *   along with this program;                                              *
+- *   if not, write to the Free Software Foundation, Inc.,                  *
+- *   59 Temple Place, Suite 330, Boston, MA  02111-1307  USA               *
+- *                                                                         *
+- ***************************************************************************/
+-
+-#include "i18n.h"
+-
+-
+-const tI18nPhrase Phrases[] =
+-{
+-    {
+-        "Output to graphic LCD",// English
+-        "Ausgabe auf einem Grafik-LCD",// Deutsch
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Affichage sur un écran LCD",// Français
+-        "",// TODO Norsk
+-        "Ohjaa graafista LCD-näyttöä",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Ecran grafic LCD/VFD",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Plugin active",
+-        "Plugin aktiv",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Plugin actif",
+-        "",// TODO Norsk
+-        "Laajennos aktiivinen",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Plugin activat",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "JanFebMarAprMayJunJulAugSepOctNovDec",
+-        "JanFebMärAprMaiJunJulAugSepOktNovDez",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "JanFevMarAvrMaiJunJuiAouSepOctNovDec",
+-        "",// TODO Norsk
+-        "TamHelMaaHuhTouKesHeiEloSyyLokMarJou",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "IanFebMarAprMaiIunIulAugSepOctNoiDec",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Date/Time",
+-        "Zeige Datum/Uhrzeit",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher Date/Heure",
+-        "",// TODO Norsk
+-        "Näytä päivämäärä/kello",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã Data/Ora",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "not in menu",
+-        "nicht im Menu",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "pas dans le menu"
+-        "",// TODO Norsk
+-        "ei valikossa",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "nu în meniu",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Channel",
+-        "Zeige Kanal",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher le nom de la Chaine",
+-        "",// TODO Norsk
+-        "Näytä kanava",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã canalul",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Logo",
+-        "Zeige Logo",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher le Logo",
+-        "",// TODO Norsk
+-        "Näytä logo",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã logo",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Logo on Replay",
+-        "Zeige Logo bei Wiedergabe",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher le Logo en lecture",
+-        "",// TODO Norsk
+-        "Näytä logo toistotilassa",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã logo în timpul redãrii",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Symbols",
+-        "Zeige Symbole",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher les Symboles",
+-        "",// TODO Norsk
+-        "Näytä symbolit",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã simboluri",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show ET Symbols",
+-        "Zeige ET Symbole",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher les Symboles ET",
+-        "",// TODO Norsk
+-        "Näytä ET-symbolit",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã simboluri externe",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Program",
+-        "Zeige Programm",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher les programmes",
+-        "",// TODO Norsk
+-        "Näytä ohjelma",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã programul",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Timebar",
+-        "Zeige Zeitbalken",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher la barre de progression",
+-        "",// TODO Norsk
+-        "Näytä aikajana",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã linia timp",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Menu",
+-        "Zeige Menüs",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher le menu",
+-        "",// TODO Norsk
+-        "Näytä valikko",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã meniuri",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Messages",
+-        "Zeige Nachrichten",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher les messages",
+-        "",// TODO Norsk
+-        "Näytä viestit",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã mesaje",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Color Buttons",
+-        "Zeige farbige Tasten",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher les boutons couleurs",
+-        "",// TODO Norsk
+-        "Näytä väripainikkeet",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã butoanele colorate",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show Volume",
+-        "Zeige Lautstärke",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher le Volume",
+-        "",// TODO Norsk
+-        "Näytä äänenvoimakkuus",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã volumul",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "compressed",
+-        "komprimiert",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Compressé",
+-        "",// TODO Norsk
+-        "pakattu",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "comprimat",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "auto",
+-        "auto",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "auto",
+-        "",// TODO Norsk
+-        "automaattinen",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "auto",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "medium",
+-        "mittel",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "moyen",
+-        "",// TODO Norsk
+-        "keskikokoinen",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "mediu",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "large",
+-        "groß",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "grand",
+-        "",// TODO Norsk
+-        "suuri",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "mare",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Show free Cards",
+-        "Zeige freie Karten",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Afficher les cartes disponibles",
+-        "",// TODO Norsk
+-        "Näytä vapaat vastaanottimet",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Aratã receptoare libere",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Replay",
+-        "Spiele",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Lecture",
+-        "",// TODO Norsk
+-        "Toistotila",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Redare",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "DVD",
+-        "DVD",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "DVD",
+-        "",// TODO Norsk
+-        "DVD",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "DVD",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Music",
+-        "Musik",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Musique",
+-        "",// TODO Norsk
+-        "Musiikki",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Muzicã",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "File",
+-        "Datei",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Fichier:",
+-        "",// TODO Norsk
+-        "Tiedostot",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Fiºier",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Image",
+-        "Bild",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Image",
+-        "",// TODO Norsk
+-        "Kuvat",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Imagine",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "CD",
+-        "CD",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "CD",
+-        "",// TODO Norsk
+-        "CD",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "CD",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Unknown title",
+-        "Unbekannter Titel",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Titre inconnu",
+-        "",// TODO Norsk
+-        "Tuntematon nimi",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Titlu necunoscut",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Identify replay type",
+-        "Wiedergabetyp erkennen",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Identifier le type de lecture",
+-        "",// TODO Norsk
+-        "Tunnista toistotilan tyyppi",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Identificarea tipului redãrii",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Modify replay string",
+-        "Wiedergabetext verändern",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Modifier la chaine de lecture",
+-        "",// TODO Norsk
+-        "Muokkaa toistotilan merkkijonoa",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Modifica textul redãrii",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Scroll text lines",
+-        "Textzeilen scrollen",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Faire défiler le texte",
+-        "",// TODO Norsk
+-        "Vieritä tekstirivejä",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Deruleazã liniile text",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Scroll speed",
+-        "Scrollgeschwindigkeit",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Vitesse de défilement",
+-        "",// TODO Norsk
+-        "Vieritysnopeus",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Viteza derulãrii",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Scroll time interval",
+-        "Zeitabstand beim Scrollen",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Intervalle de défilement",
+-        "",// TODO Norsk
+-        "Vierityksen päivitysväli",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Interval derulare",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "never",
+-        "niemals",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "jamais",
+-        "",// TODO Norsk
+-        "ei koskaan",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "niciodatã",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "once",
+-        "einmal",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "une fois",
+-        "",// TODO Norsk
+-        "kerran",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "odatã",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "always",
+-        "ständig",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "toujours",
+-        "",// TODO Norsk
+-        "aina",// Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "întotdeauna",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Brightness on user activity",
+-        "Helligkeit bei Nutzeraktivität",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Luminosité en utilisation",
+-        "",// TODO Norsk
+-        "",// TODO Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Luminozitate la utilizare",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Brightness on user inactivity",
+-        "Helligkeit bei Nutzerinaktivität",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Luminosité en non-utilisation",
+-        "",// TODO Norsk
+-        "",// TODO Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Luminozitate la inactivitate",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    {
+-        "Brightness delay [s]",
+-        "Verzögerung der Helligkeit [s]",
+-        "",// TODO Slovenski
+-        "",// TODO Italiano
+-        "",// TODO Nederlands
+-        "",// TODO Português
+-        "Delai de Luminosité [s]",
+-        "",// TODO Norsk
+-        "",// TODO Suomi
+-        "",// TODO Polski
+-        "",// TODO Español
+-        "",// TODO Ellinika
+-        "",// TODO Svenska
+-        "Limita luminozitate",// Românã
+-        "",// TODO Magyar
+-        "",// TODO Català
+-#if VDRVERSNUM > 10302
+-        "",// TODO Russian
+-# if VDRVERSNUM > 10307
+-        "",// TODO Croatian
+-# endif
+-#endif
+-    },
+-    { NULL }
+-};
+Index: graphlcd-0.1.5/i18n.h
+===================================================================
+--- graphlcd-0.1.5/i18n.h
++++ graphlcd-0.1.5/i18n.h	2008-04-24 00:06:49.000000000 +0300
+@@ -1,20 +0,0 @@
+-/*
+- *  GraphLCD plugin for the Video Disk Recorder
+- *
+- *  i18n.h  -  Internationalization
+- *
+- * This file is released under the GNU General Public License. Refer
+- * to the COPYING file distributed with this package.
+- *
+- * (c) 2001-2004 Carsten Siebholz <c.siebholz AT t-online.de>
+- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+- */
+-
+-#ifndef _GRAPHLCD_I18N_H_
+-#define _GRAPHLCD_I18N_H_
+-
+-#include <vdr/i18n.h>
+-
+-extern const tI18nPhrase Phrases[];
+-
+-#endif
+Index: graphlcd-0.1.5/plugin.c
+===================================================================
+--- graphlcd-0.1.5/plugin.c
++++ graphlcd-0.1.5/plugin.c	2008-04-24 00:06:49.000000000 +0300
+@@ -17,14 +17,14 @@
+ 
+ #include "display.h"
+ #include "global.h"
+-#include "i18n.h"
++
+ #include "menu.h"
+ 
+ #include <vdr/plugin.h>
+ 
+ 
+ static const char *VERSION        = "0.1.5";
+-static const char *DESCRIPTION    = "Output to graphic LCD";
++static const char *DESCRIPTION    = trNOOP("Output to graphic LCD");
+ static const char *MAINMENUENTRY  = NULL;
+ 
+ static const char * kDefaultConfigFile = "/etc/graphlcd.conf";
+@@ -113,7 +113,7 @@
+     unsigned int displayNumber = 0;
+     const char * cfgDir;
+ 
+-    RegisterI18n(Phrases);
++    
+ 
+     if (mConfigName.length() == 0)
+     {
+Index: graphlcd-0.1.5/po/de_DE.po
+===================================================================
+--- graphlcd-0.1.5/po/de_DE.po
++++ graphlcd-0.1.5/po/de_DE.po	2008-04-24 00:06:49.000000000 +0300
+@@ -0,0 +1,180 @@
++# VDR graphlcd plugin language source file.
++# Copyright (C) YEAR THE VDR-graphlcd'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the VDR-graphlcd package.
++# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: VDR-graphlcd\n"
++"Report-Msgid-Bugs-To: http://qa.mandriva.com/\n"
++"POT-Creation-Date: 2008-04-24 00:06+0300\n"
++"PO-Revision-Date: 2008-04-24 00:06+0300\n"
++"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
++"Language-Team: <vdr@linuxtv.org>\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=ISO-8859-15\n"
++"Content-Transfer-Encoding: 8bit\n"
++
++#: display.c:761
++msgid "JanFebMarAprMayJunJulAugSepOctNovDec"
++msgstr "JanFebMärAprMaiJunJulAugSepOktNovDez"
++
++#: display.c:1487
++msgid "DVD"
++msgstr "DVD"
++
++#: display.c:1489
++msgid "Music"
++msgstr "Musik"
++
++#: display.c:1491
++msgid "File"
++msgstr "Datei"
++
++#: display.c:1493
++msgid "Image"
++msgstr "Bild"
++
++#: display.c:1495
++msgid "CD"
++msgstr "CD"
++
++#: display.c:1497
++msgid "Replay"
++msgstr "Spiele"
++
++#: menu.c:34 menu.c:38 menu.c:42
++msgid "no"
++msgstr ""
++
++#: menu.c:35 menu.c:39
++msgid "yes"
++msgstr ""
++
++#: menu.c:36
++msgid "not in menu"
++msgstr "nicht im Menu"
++
++#: menu.c:40
++msgid "compressed"
++msgstr "komprimiert"
++
++#: menu.c:43
++msgid "auto"
++msgstr "auto"
++
++#: menu.c:44
++msgid "medium"
++msgstr "mittel"
++
++#: menu.c:45
++msgid "large"
++msgstr "groß"
++
++#: menu.c:47
++msgid "never"
++msgstr "niemals"
++
++#: menu.c:48
++msgid "once"
++msgstr "einmal"
++
++#: menu.c:49
++msgid "always"
++msgstr "ständig"
++
++#: menu.c:53
++msgid "Plugin active"
++msgstr "Plugin aktiv"
++
++#: menu.c:54
++msgid "Show Date/Time"
++msgstr "Zeige Datum/Uhrzeit"
++
++#: menu.c:55
++msgid "Show Channel"
++msgstr "Zeige Kanal"
++
++#: menu.c:56
++msgid "Show Logo"
++msgstr "Zeige Logo"
++
++#: menu.c:57
++msgid "Show Symbols"
++msgstr "Zeige Symbole"
++
++#: menu.c:58
++msgid "Show ET Symbols"
++msgstr "Zeige ET Symbole"
++
++#: menu.c:59
++msgid "Show Program"
++msgstr "Zeige Programm"
++
++#: menu.c:60
++msgid "Show Timebar"
++msgstr "Zeige Zeitbalken"
++
++#: menu.c:61
++msgid "Show Menu"
++msgstr "Zeige Menüs"
++
++#: menu.c:62
++msgid "Show Messages"
++msgstr "Zeige Nachrichten"
++
++#: menu.c:63
++msgid "Show Color Buttons"
++msgstr "Zeige farbige Tasten"
++
++#: menu.c:64
++msgid "Show Volume"
++msgstr "Zeige Lautstärke"
++
++#: menu.c:65
++msgid "Show free Cards"
++msgstr "Zeige freie Karten"
++
++#: menu.c:66
++msgid "Identify replay type"
++msgstr "Wiedergabetyp erkennen"
++
++#: menu.c:69
++msgid "Modify replay string"
++msgstr "Wiedergabetext verändern"
++
++#: menu.c:70
++msgid "Show Logo on Replay"
++msgstr "Zeige Logo bei Wiedergabe"
++
++#: menu.c:72
++msgid "Scroll text lines"
++msgstr "Textzeilen scrollen"
++
++#: menu.c:73
++msgid "Scroll speed"
++msgstr "Scrollgeschwindigkeit"
++
++#: menu.c:74
++msgid "Scroll time interval"
++msgstr "Zeitabstand beim Scrollen"
++
++#: menu.c:75
++msgid "Brightness on user activity"
++msgstr "Helligkeit bei Nutzeraktivität"
++
++#: menu.c:76
++msgid "Brightness on user inactivity"
++msgstr "Helligkeit bei Nutzerinaktivität"
++
++#: menu.c:77
++msgid "Brightness delay [s]"
++msgstr "Verzögerung der Helligkeit [s]"
++
++#: plugin.c:27
++msgid "Output to graphic LCD"
++msgstr "Ausgabe auf einem Grafik-LCD"
++
++#: state.c:193 state.c:244
++msgid "Unknown title"
++msgstr "Unbekannter Titel"
+Index: graphlcd-0.1.5/po/fi_FI.po
+===================================================================
+--- graphlcd-0.1.5/po/fi_FI.po
++++ graphlcd-0.1.5/po/fi_FI.po	2008-04-24 00:06:49.000000000 +0300
+@@ -0,0 +1,180 @@
++# VDR graphlcd plugin language source file.
++# Copyright (C) YEAR THE VDR-graphlcd'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the VDR-graphlcd package.
++# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: VDR-graphlcd\n"
++"Report-Msgid-Bugs-To: http://qa.mandriva.com/\n"
++"POT-Creation-Date: 2008-04-24 00:06+0300\n"
++"PO-Revision-Date: 2008-04-24 00:06+0300\n"
++"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
++"Language-Team: <vdr@linuxtv.org>\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=ISO-8859-15\n"
++"Content-Transfer-Encoding: 8bit\n"
++
++#: display.c:761
++msgid "JanFebMarAprMayJunJulAugSepOctNovDec"
++msgstr "TamHelMaaHuhTouKesHeiEloSyyLokMarJou"
++
++#: display.c:1487
++msgid "DVD"
++msgstr "DVD"
++
++#: display.c:1489
++msgid "Music"
++msgstr "Musiikki"
++
++#: display.c:1491
++msgid "File"
++msgstr "Tiedostot"
++
++#: display.c:1493
++msgid "Image"
++msgstr "Kuvat"
++
++#: display.c:1495
++msgid "CD"
++msgstr "CD"
++
++#: display.c:1497
++msgid "Replay"
++msgstr "Toistotila"
++
++#: menu.c:34 menu.c:38 menu.c:42
++msgid "no"
++msgstr ""
++
++#: menu.c:35 menu.c:39
++msgid "yes"
++msgstr ""
++
++#: menu.c:36
++msgid "not in menu"
++msgstr "ei valikossa"
++
++#: menu.c:40
++msgid "compressed"
++msgstr "pakattu"
++
++#: menu.c:43
++msgid "auto"
++msgstr "automaattinen"
++
++#: menu.c:44
++msgid "medium"
++msgstr "keskikokoinen"
++
++#: menu.c:45
++msgid "large"
++msgstr "suuri"
++
++#: menu.c:47
++msgid "never"
++msgstr "ei koskaan"
++
++#: menu.c:48
++msgid "once"
++msgstr "kerran"
++
++#: menu.c:49
++msgid "always"
++msgstr "aina"
++
++#: menu.c:53
++msgid "Plugin active"
++msgstr "Laajennos aktiivinen"
++
++#: menu.c:54
++msgid "Show Date/Time"
++msgstr "Näytä päivämäärä/kello"
++
++#: menu.c:55
++msgid "Show Channel"
++msgstr "Näytä kanava"
++
++#: menu.c:56
++msgid "Show Logo"
++msgstr "Näytä logo"
++
++#: menu.c:57
++msgid "Show Symbols"
++msgstr "Näytä symbolit"
++
++#: menu.c:58
++msgid "Show ET Symbols"
++msgstr "Näytä ET-symbolit"
++
++#: menu.c:59
++msgid "Show Program"
++msgstr "Näytä ohjelma"
++
++#: menu.c:60
++msgid "Show Timebar"
++msgstr "Näytä aikajana"
++
++#: menu.c:61
++msgid "Show Menu"
++msgstr "Näytä valikko"
++
++#: menu.c:62
++msgid "Show Messages"
++msgstr "Näytä viestit"
++
++#: menu.c:63
++msgid "Show Color Buttons"
++msgstr "Näytä väripainikkeet"
++
++#: menu.c:64
++msgid "Show Volume"
++msgstr "Näytä äänenvoimakkuus"
++
++#: menu.c:65
++msgid "Show free Cards"
++msgstr "Näytä vapaat vastaanottimet"
++
++#: menu.c:66
++msgid "Identify replay type"
++msgstr "Tunnista toistotilan tyyppi"
++
++#: menu.c:69
++msgid "Modify replay string"
++msgstr "Muokkaa toistotilan merkkijonoa"
++
++#: menu.c:70
++msgid "Show Logo on Replay"
++msgstr "Näytä logo toistotilassa"
++
++#: menu.c:72
++msgid "Scroll text lines"
++msgstr "Vieritä tekstirivejä"
++
++#: menu.c:73
++msgid "Scroll speed"
++msgstr "Vieritysnopeus"
++
++#: menu.c:74
++msgid "Scroll time interval"
++msgstr "Vierityksen päivitysväli"
++
++#: menu.c:75
++msgid "Brightness on user activity"
++msgstr ""
++
++#: menu.c:76
++msgid "Brightness on user inactivity"
++msgstr ""
++
++#: menu.c:77
++msgid "Brightness delay [s]"
++msgstr ""
++
++#: plugin.c:27
++msgid "Output to graphic LCD"
++msgstr "Ohjaa graafista LCD-näyttöä"
++
++#: state.c:193 state.c:244
++msgid "Unknown title"
++msgstr "Tuntematon nimi"
+Index: graphlcd-0.1.5/po/fr_FR.po
+===================================================================
+--- graphlcd-0.1.5/po/fr_FR.po
++++ graphlcd-0.1.5/po/fr_FR.po	2008-04-24 00:06:49.000000000 +0300
+@@ -0,0 +1,180 @@
++# VDR graphlcd plugin language source file.
++# Copyright (C) YEAR THE VDR-graphlcd'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the VDR-graphlcd package.
++# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: VDR-graphlcd\n"
++"Report-Msgid-Bugs-To: http://qa.mandriva.com/\n"
++"POT-Creation-Date: 2008-04-24 00:06+0300\n"
++"PO-Revision-Date: 2008-04-24 00:06+0300\n"
++"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
++"Language-Team: <vdr@linuxtv.org>\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=ISO-8859-1\n"
++"Content-Transfer-Encoding: 8bit\n"
++
++#: display.c:761
++msgid "JanFebMarAprMayJunJulAugSepOctNovDec"
++msgstr "JanFevMarAvrMaiJunJuiAouSepOctNovDec"
++
++#: display.c:1487
++msgid "DVD"
++msgstr "DVD"
++
++#: display.c:1489
++msgid "Music"
++msgstr "Musique"
++
++#: display.c:1491
++msgid "File"
++msgstr "Fichier:"
++
++#: display.c:1493
++msgid "Image"
++msgstr "Image"
++
++#: display.c:1495
++msgid "CD"
++msgstr "CD"
++
++#: display.c:1497
++msgid "Replay"
++msgstr "Lecture"
++
++#: menu.c:34 menu.c:38 menu.c:42
++msgid "no"
++msgstr ""
++
++#: menu.c:35 menu.c:39
++msgid "yes"
++msgstr ""
++
++#: menu.c:36
++msgid "not in menu"
++msgstr         "pas dans le menu"
++
++#: menu.c:40
++msgid "compressed"
++msgstr "Compressé"
++
++#: menu.c:43
++msgid "auto"
++msgstr "auto"
++
++#: menu.c:44
++msgid "medium"
++msgstr "moyen"
++
++#: menu.c:45
++msgid "large"
++msgstr "grand"
++
++#: menu.c:47
++msgid "never"
++msgstr "jamais"
++
++#: menu.c:48
++msgid "once"
++msgstr "une fois"
++
++#: menu.c:49
++msgid "always"
++msgstr "toujours"
++
++#: menu.c:53
++msgid "Plugin active"
++msgstr "Plugin actif"
++
++#: menu.c:54
++msgid "Show Date/Time"
++msgstr "Afficher Date/Heure"
++
++#: menu.c:55
++msgid "Show Channel"
++msgstr "Afficher le nom de la Chaine"
++
++#: menu.c:56
++msgid "Show Logo"
++msgstr "Afficher le Logo"
++
++#: menu.c:57
++msgid "Show Symbols"
++msgstr "Afficher les Symboles"
++
++#: menu.c:58
++msgid "Show ET Symbols"
++msgstr "Afficher les Symboles ET"
++
++#: menu.c:59
++msgid "Show Program"
++msgstr "Afficher les programmes"
++
++#: menu.c:60
++msgid "Show Timebar"
++msgstr "Afficher la barre de progression"
++
++#: menu.c:61
++msgid "Show Menu"
++msgstr "Afficher le menu"
++
++#: menu.c:62
++msgid "Show Messages"
++msgstr "Afficher les messages"
++
++#: menu.c:63
++msgid "Show Color Buttons"
++msgstr "Afficher les boutons couleurs"
++
++#: menu.c:64
++msgid "Show Volume"
++msgstr "Afficher le Volume"
++
++#: menu.c:65
++msgid "Show free Cards"
++msgstr "Afficher les cartes disponibles"
++
++#: menu.c:66
++msgid "Identify replay type"
++msgstr "Identifier le type de lecture"
++
++#: menu.c:69
++msgid "Modify replay string"
++msgstr "Modifier la chaine de lecture"
++
++#: menu.c:70
++msgid "Show Logo on Replay"
++msgstr "Afficher le Logo en lecture"
++
++#: menu.c:72
++msgid "Scroll text lines"
++msgstr "Faire défiler le texte"
++
++#: menu.c:73
++msgid "Scroll speed"
++msgstr "Vitesse de défilement"
++
++#: menu.c:74
++msgid "Scroll time interval"
++msgstr "Intervalle de défilement"
++
++#: menu.c:75
++msgid "Brightness on user activity"
++msgstr "Luminosité en utilisation"
++
++#: menu.c:76
++msgid "Brightness on user inactivity"
++msgstr "Luminosité en non-utilisation"
++
++#: menu.c:77
++msgid "Brightness delay [s]"
++msgstr "Delai de Luminosité [s]"
++
++#: plugin.c:27
++msgid "Output to graphic LCD"
++msgstr "Affichage sur un écran LCD"
++
++#: state.c:193 state.c:244
++msgid "Unknown title"
++msgstr "Titre inconnu"
+Index: graphlcd-0.1.5/po/graphlcd.pot
+===================================================================
+--- graphlcd-0.1.5/po/graphlcd.pot
++++ graphlcd-0.1.5/po/graphlcd.pot	2008-04-24 00:06:49.000000000 +0300
+@@ -0,0 +1,181 @@
++# SOME DESCRIPTIVE TITLE.
++# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the PACKAGE package.
++# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
++#
++#, fuzzy
++msgid ""
++msgstr ""
++"Project-Id-Version: PACKAGE VERSION\n"
++"Report-Msgid-Bugs-To: http://qa.mandriva.com/\n"
++"POT-Creation-Date: 2008-04-24 00:06+0300\n"
++"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
++"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
++"Language-Team: LANGUAGE <LL@li.org>\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=CHARSET\n"
++"Content-Transfer-Encoding: 8bit\n"
++
++#: display.c:761
++msgid "JanFebMarAprMayJunJulAugSepOctNovDec"
++msgstr ""
++
++#: display.c:1487
++msgid "DVD"
++msgstr ""
++
++#: display.c:1489
++msgid "Music"
++msgstr ""
++
++#: display.c:1491
++msgid "File"
++msgstr ""
++
++#: display.c:1493
++msgid "Image"
++msgstr ""
++
++#: display.c:1495
++msgid "CD"
++msgstr ""
++
++#: display.c:1497
++msgid "Replay"
++msgstr ""
++
++#: menu.c:34 menu.c:38 menu.c:42
++msgid "no"
++msgstr ""
++
++#: menu.c:35 menu.c:39
++msgid "yes"
++msgstr ""
++
++#: menu.c:36
++msgid "not in menu"
++msgstr ""
++
++#: menu.c:40
++msgid "compressed"
++msgstr ""
++
++#: menu.c:43
++msgid "auto"
++msgstr ""
++
++#: menu.c:44
++msgid "medium"
++msgstr ""
++
++#: menu.c:45
++msgid "large"
++msgstr ""
++
++#: menu.c:47
++msgid "never"
++msgstr ""
++
++#: menu.c:48
++msgid "once"
++msgstr ""
++
++#: menu.c:49
++msgid "always"
++msgstr ""
++
++#: menu.c:53
++msgid "Plugin active"
++msgstr ""
++
++#: menu.c:54
++msgid "Show Date/Time"
++msgstr ""
++
++#: menu.c:55
++msgid "Show Channel"
++msgstr ""
++
++#: menu.c:56
++msgid "Show Logo"
++msgstr ""
++
++#: menu.c:57
++msgid "Show Symbols"
++msgstr ""
++
++#: menu.c:58
++msgid "Show ET Symbols"
++msgstr ""
++
++#: menu.c:59
++msgid "Show Program"
++msgstr ""
++
++#: menu.c:60
++msgid "Show Timebar"
++msgstr ""
++
++#: menu.c:61
++msgid "Show Menu"
++msgstr ""
++
++#: menu.c:62
++msgid "Show Messages"
++msgstr ""
++
++#: menu.c:63
++msgid "Show Color Buttons"
++msgstr ""
++
++#: menu.c:64
++msgid "Show Volume"
++msgstr ""
++
++#: menu.c:65
++msgid "Show free Cards"
++msgstr ""
++
++#: menu.c:66
++msgid "Identify replay type"
++msgstr ""
++
++#: menu.c:69
++msgid "Modify replay string"
++msgstr ""
++
++#: menu.c:70
++msgid "Show Logo on Replay"
++msgstr ""
++
++#: menu.c:72
++msgid "Scroll text lines"
++msgstr ""
++
++#: menu.c:73
++msgid "Scroll speed"
++msgstr ""
++
++#: menu.c:74
++msgid "Scroll time interval"
++msgstr ""
++
++#: menu.c:75
++msgid "Brightness on user activity"
++msgstr ""
++
++#: menu.c:76
++msgid "Brightness on user inactivity"
++msgstr ""
++
++#: menu.c:77
++msgid "Brightness delay [s]"
++msgstr ""
++
++#: plugin.c:27
++msgid "Output to graphic LCD"
++msgstr ""
++
++#: state.c:193 state.c:244
++msgid "Unknown title"
++msgstr ""
+Index: graphlcd-0.1.5/po/ro_RO.po
+===================================================================
+--- graphlcd-0.1.5/po/ro_RO.po
++++ graphlcd-0.1.5/po/ro_RO.po	2008-04-24 00:06:49.000000000 +0300
+@@ -0,0 +1,180 @@
++# VDR graphlcd plugin language source file.
++# Copyright (C) YEAR THE VDR-graphlcd'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the VDR-graphlcd package.
++# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: VDR-graphlcd\n"
++"Report-Msgid-Bugs-To: http://qa.mandriva.com/\n"
++"POT-Creation-Date: 2008-04-24 00:06+0300\n"
++"PO-Revision-Date: 2008-04-24 00:06+0300\n"
++"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
++"Language-Team: <vdr@linuxtv.org>\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=ISO-8859-2\n"
++"Content-Transfer-Encoding: 8bit\n"
++
++#: display.c:761
++msgid "JanFebMarAprMayJunJulAugSepOctNovDec"
++msgstr "IanFebMarAprMaiIunIulAugSepOctNoiDec"
++
++#: display.c:1487
++msgid "DVD"
++msgstr "DVD"
++
++#: display.c:1489
++msgid "Music"
++msgstr "Muzicã"
++
++#: display.c:1491
++msgid "File"
++msgstr "Fiºier"
++
++#: display.c:1493
++msgid "Image"
++msgstr "Imagine"
++
++#: display.c:1495
++msgid "CD"
++msgstr "CD"
++
++#: display.c:1497
++msgid "Replay"
++msgstr "Redare"
++
++#: menu.c:34 menu.c:38 menu.c:42
++msgid "no"
++msgstr ""
++
++#: menu.c:35 menu.c:39
++msgid "yes"
++msgstr ""
++
++#: menu.c:36
++msgid "not in menu"
++msgstr "nu în meniu"
++
++#: menu.c:40
++msgid "compressed"
++msgstr "comprimat"
++
++#: menu.c:43
++msgid "auto"
++msgstr "auto"
++
++#: menu.c:44
++msgid "medium"
++msgstr "mediu"
++
++#: menu.c:45
++msgid "large"
++msgstr "mare"
++
++#: menu.c:47
++msgid "never"
++msgstr "niciodatã"
++
++#: menu.c:48
++msgid "once"
++msgstr "odatã"
++
++#: menu.c:49
++msgid "always"
++msgstr "întotdeauna"
++
++#: menu.c:53
++msgid "Plugin active"
++msgstr "Plugin activat"
++
++#: menu.c:54
++msgid "Show Date/Time"
++msgstr "Aratã Data/Ora"
++
++#: menu.c:55
++msgid "Show Channel"
++msgstr "Aratã canalul"
++
++#: menu.c:56
++msgid "Show Logo"
++msgstr "Aratã logo"
++
++#: menu.c:57
++msgid "Show Symbols"
++msgstr "Aratã simboluri"
++
++#: menu.c:58
++msgid "Show ET Symbols"
++msgstr "Aratã simboluri externe"
++
++#: menu.c:59
++msgid "Show Program"
++msgstr "Aratã programul"
++
++#: menu.c:60
++msgid "Show Timebar"
++msgstr "Aratã linia timp"
++
++#: menu.c:61
++msgid "Show Menu"
++msgstr "Aratã meniuri"
++
++#: menu.c:62
++msgid "Show Messages"
++msgstr "Aratã mesaje"
++
++#: menu.c:63
++msgid "Show Color Buttons"
++msgstr "Aratã butoanele colorate"
++
++#: menu.c:64
++msgid "Show Volume"
++msgstr "Aratã volumul"
++
++#: menu.c:65
++msgid "Show free Cards"
++msgstr "Aratã receptoare libere"
++
++#: menu.c:66
++msgid "Identify replay type"
++msgstr "Identificarea tipului redãrii"
++
++#: menu.c:69
++msgid "Modify replay string"
++msgstr "Modifica textul redãrii"
++
++#: menu.c:70
++msgid "Show Logo on Replay"
++msgstr "Aratã logo în timpul redãrii"
++
++#: menu.c:72
++msgid "Scroll text lines"
++msgstr "Deruleazã liniile text"
++
++#: menu.c:73
++msgid "Scroll speed"
++msgstr "Viteza derulãrii"
++
++#: menu.c:74
++msgid "Scroll time interval"
++msgstr "Interval derulare"
++
++#: menu.c:75
++msgid "Brightness on user activity"
++msgstr "Luminozitate la utilizare"
++
++#: menu.c:76
++msgid "Brightness on user inactivity"
++msgstr "Luminozitate la inactivitate"
++
++#: menu.c:77
++msgid "Brightness delay [s]"
++msgstr "Limita luminozitate"
++
++#: plugin.c:27
++msgid "Output to graphic LCD"
++msgstr "Ecran grafic LCD/VFD"
++
++#: state.c:193 state.c:244
++msgid "Unknown title"
++msgstr "Titlu necunoscut"

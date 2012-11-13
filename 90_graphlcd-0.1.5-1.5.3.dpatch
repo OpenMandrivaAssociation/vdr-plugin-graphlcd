@@ -1,0 +1,21 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 90_xineliboutput-1.5.3.dpatch by Thomas Günther <tom@toms-cafe.de>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Changes for VDR >= 1.5.3.
+
+@DPATCH@
+--- xineliboutput-1.5.3/layout.c
++++ xineliboutput-1.5.3/layout.c
+@@ -65,7 +65,11 @@ bool cFontElement::Load(const std::strin
+             file += "/fonts/";
+             file += url.substr(4, pos - 4);
+         }
++#if APIVERSNUM >= 10503
++        return font.LoadFT2(file, cCharSetConv::SystemCharacterTable(), size);
++#else
+         return font.LoadFT2(file, I18nCharSets()[Setup.OSDLanguage], size);
++#endif
+     }
+     else
+     {
