@@ -2,7 +2,7 @@
 %define plugin	graphlcd
 %define name	vdr-plugin-%plugin
 %define version	0.1.5
-%define rel	11
+%define rel	12
 
 Summary:	VDR plugin: Output to graphic LCD
 Name:		%name
@@ -50,12 +50,6 @@ param="-d DISPLAY"
 
 install -d -m755 %{buildroot}%{vdr_plugin_cfgdir}
 cp -a graphlcd %{buildroot}%{vdr_plugin_cfgdir}
-
-%post
-%vdr_plugin_post %plugin
-
-%postun
-%vdr_plugin_postun %plugin
 
 %files -f %plugin.vdr
 %defattr(-,root,root)
