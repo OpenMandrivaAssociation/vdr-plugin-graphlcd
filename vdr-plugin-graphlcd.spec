@@ -10,7 +10,7 @@ Version:	%version
 Release:	%rel
 Group:		Video
 License:	GPL+
-URL:		http://graphlcd.berlios.de/
+URL:		https://graphlcd.berlios.de/
 Source:		vdr-%plugin-%version-stripped.tar.bz2
 Patch0:		graphlcd-0.1.5-i18n-1.6.patch
 Patch1:		90_graphlcd-0.1.5-1.5.3.dpatch
